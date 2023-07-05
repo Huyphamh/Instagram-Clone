@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import appstore from "../../imgs/ggStore.png";
 import mircoS from "../../imgs/Microsoft.png";
 import { useForm } from "react-hook-form";
@@ -8,31 +8,61 @@ import Input from "components/input/Input";
 import { Link, useNavigate } from "react-router-dom";
 import { doc, setDoc } from "firebase/firestore";
 import slugify from "slugify";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { toast } from "react-toastify";
 
 const FormSignUp = () => {
   const navigate = useNavigate();
-  const { handleSubmit, control } = useForm({
+
+  const schema = yup.object({
+    email: yup
+      .string()
+      .email("Hãy nhập đúng định dạng Email của bạn")
+      .required("Hãy địa chỉ Email của bạn"),
+    fullname: yup.string().required("Nhập tên người dùng của bạn"),
+    password: yup
+      .string()
+      .min(8, "Mật khẩu của bạn phải chứa ít nhất 8 ký tự")
+      .required("Hãy nhập mật khẩu của bạn"),
+  });
+
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm({
     mode: "onChange",
+    resolver: yupResolver(schema),
   });
 
   const handleSignUp = async (values) => {
     await createUserWithEmailAndPassword(auth, values.email, values.password);
-
     await updateProfile(auth.currentUser, {
       displayName: values.fullname,
-      photoURL: "https://mcdn.coolmate.me/image/April2023/meme-ech-xanh-10.jpg"
     });
-    // const colRef = collection(db, "users");
     await setDoc(doc(db, "users", auth.currentUser.uid), {
       fullname: values.fullname,
       email: values.email,
       password: values.password,
       username: slugify(values.fullname, { lower: true }),
       status: 1,
-      avatar: "https://mcdn.coolmate.me/image/April2023/meme-ech-xanh-10.jpg",
+      avatar: "",
     });
+    toast.success("Đăng ký tài khoản thành công!!!");
     navigate("/HomePage");
   };
+
+  useEffect(() => {
+    const arrErroes = Object.values(errors);
+    if (arrErroes.length > 0) {
+      toast.error(arrErroes[0]?.message, {
+        pauseOnHover: false,
+        delay: 0,
+      });
+    }
+  }, [errors]);
+
   return (
     <div className="flex flex-col items-center mt-5">
       <form
@@ -52,7 +82,7 @@ const FormSignUp = () => {
           type="email"
           name="email"
           control={control}
-          placeholder="Số điện thoại hoặc email"
+          placeholder="Nhập Email bạn muốn đăng ký"
         ></Input>
         <Input
           type="text"

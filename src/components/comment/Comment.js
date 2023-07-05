@@ -1,5 +1,7 @@
+import { db } from "firebase-app/firebase-config";
+import { doc, getDoc } from "firebase/firestore";
 import moment from "moment";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const Comment = ({ post }) => {
   const timePost = {
@@ -11,12 +13,26 @@ const Comment = ({ post }) => {
       "DD/MM/YYYY HH:mm:ss"
     );
   }
-
-  console.log(post);
+  const [user, setUser] = useState({});
+  useEffect(() => {
+    async function fetchUser() {
+      const docRef = doc(db, "users", post.userId);
+      const docSnap = await getDoc(docRef);
+      setUser(docSnap.data());
+    }
+    fetchUser();
+  }, [post.userId]);
 
   return (
     <div className="flex flex-wrap items-center w-auto mb-3">
-      <img src={post.avatar} alt="" className="rounded-full w-7 h-7" />
+      <img
+        src={
+          user.avatar ||
+          "https://st.quantrimang.com/photos/image/2022/09/13/Meo-khoc-1.jpg"
+        }
+        alt=""
+        className="object-cover rounded-full w-7 h-7"
+      />
       <p className="px-2 font-bold">{post.commentNameUser} : </p>
       <p className="w-auto break-all">{post.commentPost}</p>{" "}
       <p className="mb-2 ml-2 text-xs text-gray-500">{timeString}</p>

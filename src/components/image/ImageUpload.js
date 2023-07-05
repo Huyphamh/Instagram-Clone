@@ -34,7 +34,7 @@ const ImageUpload = (props) => {
       )}
       {image && (
         <Fragment>
-          <img src={image} className="object-cover w-full h-full " alt="" />
+          <img src={image} className="object-cover w-auto h-auto " alt="" />
           <button
             type="button"
             className="absolute z-10 flex items-center justify-center invisible w-16 h-16 text-red-500 transition-all bg-white rounded-full opacity-0 cursor-pointer group-hover:opacity-100 group-hover:visible"

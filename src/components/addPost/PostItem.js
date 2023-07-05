@@ -1,10 +1,23 @@
+import LoadingPost from "components/loading/LoadingPost";
+import { useAuth } from "contexts/auth-context";
 import { db } from "firebase-app/firebase-config";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  query,
+  where,
+} from "firebase/firestore";
 import moment from "moment/moment";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const PostItem = ({ data }) => {
+  const { userInfo } = useAuth();
   const navigate = useNavigate();
   const [user, setUser] = useState({});
   useEffect(() => {
@@ -22,46 +35,183 @@ const PostItem = ({ data }) => {
       "DD/MM/YYYY HH:mm:ss"
     );
   }
+
+  const [like, setLike] = useState(false);
+  const [likeData, setLikeData] = useState([]);
+  const [updateFlag, setUpdateFlag] = useState(false);
+  useEffect(() => {
+    const fetchData = async () => {
+      const colRef = collection(db, "likesPost");
+      const querys = query(
+        colRef,
+        where("idPost", "==", data.id),
+        where("userId", "==", userInfo.uid)
+      );
+      const querySnapshot = await getDocs(querys);
+      const tempData = [];
+      querySnapshot.forEach((doc) => {
+        tempData.push({ id: doc.id, ...doc.data() });
+      });
+      setLikeData(tempData);
+      setLike(tempData.length > 0);
+    };
+    fetchData();
+  }, [data, userInfo, updateFlag]);
+  const [likeDataAllUsers, setLikeDataAllUsers] = useState([]);
+  useEffect(() => {
+    const fetchDataLikesAllUsers = async () => {
+      const colRef = collection(db, "likesPost");
+      const querys = query(colRef, where("idPost", "==", data.id));
+      const querySnapshot = await getDocs(querys);
+      const tempData = [];
+      querySnapshot.forEach((doc) => {
+        tempData.push({ id: doc.id, ...doc.data() });
+      });
+      setLikeDataAllUsers(tempData);
+    };
+    fetchDataLikesAllUsers();
+  }, [data]);
+  const totalLikes = likeDataAllUsers.length;
+  const handleLikePost = async () => {
+    if (likeData.length > 0) {
+      const docRef = await getDoc(doc(db, "likesPost", likeData[0].id));
+      await deleteDoc(docRef.ref);
+      setUpdateFlag(!updateFlag);
+      setLike(false);
+      localStorage.setItem(`like-${data.id}`, false);
+    } else {
+      const colRef = collection(db, "likesPost");
+      await addDoc(colRef, {
+        idPost: data.id,
+        userId: userInfo.uid,
+        commentNameUser: userInfo.displayName,
+      });
+      setUpdateFlag(!updateFlag);
+      setLike(true);
+      localStorage.setItem(`like-${data.id}`, true);
+    }
+    const colRef = collection(db, "likesPost");
+    const querys = query(colRef, where("idPost", "==", data.id));
+    const querySnapshot = await getDocs(querys);
+    const tempData = [];
+    querySnapshot.forEach((doc) => {
+      tempData.push({ id: doc.id, ...doc.data() });
+    });
+    setLikeDataAllUsers(tempData);
+  };
+
+  const [comment, setComment] = useState([]);
+  useEffect(() => {
+    const colRef = collection(db, "commentPost");
+    const qs = query(colRef, where("idPost", "==", data.id));
+    onSnapshot(qs, (snapshot) => {
+      const results = [];
+      snapshot.forEach((item) => {
+        results.push({
+          id: item.id,
+          ...item.data(),
+        });
+      });
+      results.sort((a, b) => b.createAt - a.createAt);
+      setComment(results);
+    });
+  }, [data.id]);
+  const commentTotal = comment.length;
+  const [loading, setLoading] = useState(true);
+
+  function handleImageLoad() {
+    setLoading(false);
+  }
+
   return (
     <div className="max-w-[528px] mx-5 h-auto mt-5 ">
-      <div className="flex items-center justify-between pt-3">
-        <div className="flex items-center">
+      <div className="flex items-center justify-between pt-3 drop-shadow-sm">
+        <div
+          onClick={() => navigate(`/Personal?userName=${user.username}`)}
+          className="flex items-center cursor-pointer"
+        >
           <img
-            src={user.avatar}
+            src={
+              user.avatar ||
+              "https://st.quantrimang.com/photos/image/2022/09/13/Meo-khoc-1.jpg"
+            }
             alt=""
-            className="border border-gray-500 rounded-full w-9 h-9"
+            className="object-cover w-10 h-10 border border-gray-500 rounded-full drop-shadow-sm"
           />
-          <p className="px-2 font-bold">{user?.username || user.fullname}</p>
-          <p>{timeString}</p>
-        </div>
-        <i className="mt-2 text-xl bx bx-grid-alt"></i>
-      </div>
-      <div>
-        <img
-          src={data.image}
-          alt=""
-          className="object-cover w-full h-auto mt-2 cursor-pointer"
-          onClick={() => navigate(`/PostAbout?id=${data.id}`)}
-        />
+          {user.status === 2 ? (
+            <p className="flex items-center px-2 font-semibold text-md drop-shadow-sm">
+              {user?.username || user.fullname}{" "}
+              <i className="text-blue-500 bx bxs-brightness"></i>{" "}
+            </p>
+          ) : (
+            <p className="px-2 font-medium text-md drop-shadow-sm">
+              {user?.username || user.fullname}
+            </p>
+          )}
 
-        <div className="flex items-start justify-between">
+          <p className="text-xs">{timeString}</p>
+        </div>
+        <i
+          onClick={() => navigate(`/PostAbout?id=${data.id} `)}
+          className="mt-2 text-xl cursor-pointer bx bx-grid-alt"
+        ></i>
+      </div>
+      <div className="">
+        <div className="w-full sm:w-[528px] h-auto bg-gray-100 justify-center items-center flex mt-2">
+          {loading && <LoadingPost />}
+          <img
+            src={data.image}
+            alt=""
+            className="object-cover h-full ss:w-auto sm:max-h-[600px] cursor-pointer "
+            onClick={() => navigate(`/PostAbout?id=${data.id} `)}
+            onLoad={handleImageLoad}
+          />
+        </div>
+
+        <div className="flex items-start justify-between ">
           <div className="">
-            <i className="text-3xl bx bx-heart"></i>
-            <i className="mx-4 my-2 text-3xl bx bx-comment-detail "></i>
+            {like ? (
+              <i
+                className="text-3xl text-red-500 cursor-pointer bx bxs-heart "
+                onClick={handleLikePost}
+              ></i>
+            ) : (
+              <i
+                className="text-3xl cursor-pointer bx bx-heart"
+                onClick={handleLikePost}
+              ></i>
+            )}
+            <i
+              onClick={() => navigate(`/PostAbout?id=${data.id} `)}
+              className="mx-4 my-2 text-3xl cursor-pointer bx bx-comment-detail "
+            ></i>
             <i className="text-3xl bx bx-share"></i>
           </div>
           <i className="text-3xl bx bx-label"></i>
         </div>
-        <p className="font-bold ">1.989 lượt thích</p>
+        <p className="font-bold ">{totalLikes} lượt thích</p>
         <div className="flex">
-          <p className="font-bold ">{user?.username || user.fullname}</p>
+          <p className="font-bold ">{user?.username || user.fullname} : </p>
           <p className="px-2 ">{data.stt}</p>
         </div>
-        <p>Xem bình luận</p>
+        <div
+          className="cursor-pointer "
+          onClick={() => navigate(`/PostAbout?id=${data.id} `)}
+        >
+          {commentTotal ? (
+            <p>
+              {" "}
+              <span className="font-bold">{commentTotal}</span> Bình luận
+            </p>
+          ) : (
+            <i></i>
+          )}
+        </div>
         <input
           type="text"
-          className="w-full focus:border-none"
+          className="w-full outline-none cursor-pointer focus:border-none"
           placeholder="Thêm bình luận"
+          onClick={() => navigate(`/PostAbout?id=${data.id}`)}
         />
       </div>
     </div>

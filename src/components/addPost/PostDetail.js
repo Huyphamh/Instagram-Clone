@@ -1,5 +1,7 @@
 import Comment from "components/comment/Comment";
 import InputTextComment from "components/input/InputTextComment";
+import PostEdit from "components/menuPost/PostEdit";
+import { useAuth } from "contexts/auth-context";
 import { db } from "firebase-app/firebase-config";
 import {
   collection,
@@ -15,6 +17,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const PostDetail = () => {
+  const { userInfo } = useAuth();
   const [params] = useSearchParams();
   const postId = params.get("id");
 
@@ -66,7 +69,6 @@ const PostDetail = () => {
     });
   }, [postId]);
 
-  if (!post) return null;
   return (
     <div className="flex mt-20">
       <div className="fixed top-0 left-0 flex items-center justify-center w-full h-full bg-[rgba(0,0,0,0.5)] z-0"></div>
@@ -79,11 +81,23 @@ const PostDetail = () => {
       </div>
       <div className="w-full relative sm:w-1/2 h-[550px] sm:h-auto lg:w-[30%] justify-center z-10 bg-white ">
         {/* STT */}
-        <div className="flex flex-wrap items-center w-auto h-auto pt-2 pl-5 border border-b-black">
-          <img src={user.avatar} alt="" className="rounded-full w-9 h-9" />
-          <p className="px-2 font-bold">{post.PostNameId}</p>
-          <p className="text-xs">{timeString}</p>
-          <p className="w-full ml-12">{post.stt}</p>
+        <div className="flex justify-between w-auto h-20 pt-2 pl-5 border border-b-black">
+          <div className="flex flex-wrap items-center ">
+            <img
+              src={
+                user.avatar ||
+                "https://st.quantrimang.com/photos/image/2022/09/13/Meo-khoc-1.jpg"
+              }
+              alt=""
+              className="object-cover rounded-full w-9 h-9"
+            />
+            <p className="px-2 font-bold">{post.PostNameId}</p>
+            <p className="text-xs">{timeString}</p>
+            <p className="w-full ml-12">{post.stt}</p>
+          </div>
+          {post.userId === userInfo.uid && (
+            <PostEdit postId={postId} user={user} post={post}></PostEdit>
+          )}
         </div>
 
         <div className="pl-5 mt-10">
@@ -93,7 +107,7 @@ const PostDetail = () => {
           ))}
         </div>
 
-        <div className="absolute bottom-0 w-full h-auto">
+        <div className="absolute bottom-0 z-20 w-full h-auto">
           <InputTextComment data={postId}></InputTextComment>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import Input from "components/input/Input";
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+
 import {
   deleteObject,
   getDownloadURL,
@@ -9,7 +10,13 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import ImageUpload from "components/image/ImageUpload";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "firebase-app/firebase-config";
 import { useAuth } from "contexts/auth-context";
 
@@ -93,6 +100,19 @@ const AddNewPost = () => {
         console.log("ko thanh cong");
       });
   };
+
+  const [user, setUser] = useState({});
+  useEffect(() => {
+    async function fetchUser() {
+      if (userInfo && userInfo.uid) {
+        const docRef = doc(db, "users", userInfo.uid);
+        const docSnap = await getDoc(docRef);
+        setUser(docSnap.data());
+      }
+    }
+    fetchUser();
+  }, [userInfo]);
+
   const handleAddPost = async (values) => {
     const cloneValues = { ...values };
     const colRef = collection(db, "posts");
@@ -100,14 +120,14 @@ const AddNewPost = () => {
       ...cloneValues,
       image,
       userId: userInfo.uid,
-      PostNameId: userInfo.displayName,
+      PostNameId: user.username,
       createAt: serverTimestamp(),
-      // photoURL: userInfo.avatar
+      username: user.username,
+      likePost: 0,
+      commentPost: 0,
     });
-    console.log(cloneValues);
     window.location.reload();
   };
-  // console.log(userInfo);
   return (
     <div>
       <div
@@ -142,7 +162,6 @@ const AddNewPost = () => {
                   progress={progress}
                   image={image}
                 ></ImageUpload>
-                
               </div>
             </div>
             <button className=" bg-[#4cb5f9] w-full rounded-md h-8 text-white font-bold text-sm mt-2">

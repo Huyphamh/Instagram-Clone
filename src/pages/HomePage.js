@@ -5,14 +5,14 @@ import Story from "components/itemsHomePage/Story";
 import { useAuth } from "contexts/auth-context";
 import React from "react";
 import LandingPage from "./LandingPage";
+// import LandingPage from "./LandingPage";
 
 const HomePage = () => {
-  const {userInfo} = useAuth();
-  if(!userInfo) return <LandingPage></LandingPage>
-  // console.log(userInfo);
+  const { userInfo } = useAuth();
+  if (!userInfo) return <LandingPage></LandingPage>;
   return (
     <div className="">
-      <SiderBar className=""></SiderBar>
+      <SiderBar></SiderBar>
       <Story></Story>
       <div className="flex justify-end">
         <Post></Post>

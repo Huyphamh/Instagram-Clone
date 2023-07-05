@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "contexts/auth-context";
-import { addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "firebase-app/firebase-config";
 import { useForm } from "react-hook-form";
 import Input from "./Input";
@@ -24,6 +30,7 @@ const InputTextComment = ({ data }) => {
     }
     fetchUser();
   }, [userInfo]);
+  
 
   const handleCommentPost = async (values) => {
     const cloneValues = { ...values };
@@ -34,7 +41,7 @@ const InputTextComment = ({ data }) => {
       userId: userInfo.uid,
       commentNameUser: userInfo.displayName,
       createAt: serverTimestamp(),
-      avatar: user.avatar
+      avatar: user.avatar,
     });
     setValue("commentPost");
   };
@@ -45,11 +52,8 @@ const InputTextComment = ({ data }) => {
       onSubmit={handleSubmit(handleCommentPost)}
     >
       <div className="flex w-full">
-        <img
-          src={user.avatar}
-          alt=""
-          className="w-8 h-8 mr-2 rounded-full"
-        />
+        <img src={user.avatar ||
+              "https://st.quantrimang.com/photos/image/2022/09/13/Meo-khoc-1.jpg"} alt="" className="object-cover w-8 h-8 mr-2 rounded-full" />
         <Input
           name="commentPost"
           type="text"

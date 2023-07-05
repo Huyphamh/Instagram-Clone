@@ -3,7 +3,7 @@ import "./styleLoading.css";
 
 const LoadingPost = () => {
   return (
-    <div className="loader">
+    <div className=" loader">
       <div className="wrapper">
         <div className="circle" />
         <div className="line-1" />

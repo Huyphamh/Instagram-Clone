@@ -1,5 +1,5 @@
 import PostItem from "components/addPost/PostItem";
-// import LoadingPost from "components/loading/LoadingPost";
+import LoadingPost from "components/loading/LoadingPost";
 import { db } from "firebase-app/firebase-config";
 import { collection, onSnapshot } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
@@ -20,15 +20,19 @@ const Post = () => {
       setPosts(results);
     });
   }, []);
-  // console.log(posts);
-  
   if (posts.length <= 0) return null;
   return (
-    <div className="flex flex-wrap justify-center w-full h-auto mb-20 item-center sm:w-4/5 xl:w-3/5">
-       {posts.map((post) => (
-        <PostItem key={post.id} data={post}></PostItem>
-      ))} 
-    </div>
+    <>
+      {posts.length > 0  ? (
+        <div className="flex flex-wrap justify-center w-full h-auto mb-20 item-center sm:w-4/5 xl:w-3/5">
+          {posts.map((post) => (
+            <PostItem key={post.id} data={post}></PostItem>
+          ))}
+        </div>
+      ) : (
+        <LoadingPost/>
+      )}
+    </>
   );
 };
 
