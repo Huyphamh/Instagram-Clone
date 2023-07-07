@@ -157,12 +157,12 @@ const PostItem = ({ data }) => {
         ></i>
       </div>
       <div className="">
-        <div className="w-full sm:w-[528px] h-auto bg-gray-100 justify-center items-center flex mt-2">
+        <div className="w-full sm:w-[528px] h-auto bg-gray-400 justify-center items-center flex mt-2">
           {loading && <LoadingPost />}
           <img
             src={data.image}
             alt=""
-            className="object-cover h-full ss:w-auto sm:max-h-[600px] cursor-pointer "
+            className="object-cover w-full h-full md:w-auto sm:max-h-[600px] cursor-pointer "
             onClick={() => navigate(`/PostAbout?id=${data.id} `)}
             onLoad={handleImageLoad}
           />
@@ -195,7 +195,7 @@ const PostItem = ({ data }) => {
           <p className="px-2 ">{data.stt}</p>
         </div>
         <div
-          className="cursor-pointer "
+          className="cursor-pointer"
           onClick={() => navigate(`/PostAbout?id=${data.id} `)}
         >
           {commentTotal ? (

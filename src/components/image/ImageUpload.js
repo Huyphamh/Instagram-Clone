@@ -19,6 +19,7 @@ const ImageUpload = (props) => {
         type="file"
         name={name}
         className="hidden"
+        required
         onChange={() => {}}
         {...rest}
       />

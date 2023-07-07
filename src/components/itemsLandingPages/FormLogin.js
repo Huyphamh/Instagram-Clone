@@ -15,7 +15,7 @@ const FormLogin = () => {
     email: yup
       .string()
       .email("Hãy nhập đúng định dạng Email của bạn")
-      .required("Hãy địa chỉ Email của bạn"),
+      .required("Hãy nhập địa chỉ Email của bạn"),
     password: yup
       .string()
       .min(8, "Mật khẩu của bạn phải chứa ít nhất 8 ký tự")

@@ -3,6 +3,7 @@ import { db } from "firebase-app/firebase-config";
 import { deleteDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
@@ -57,22 +58,24 @@ const PostEdit = ({ user, postId, post }) => {
       window.location.reload();
     }, 2000);
   };
-
+  const navigate= useNavigate();
   const handleDetetePost = async (postId) => {
     const colRel = doc(db, "posts", postId);
     Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
+      title: "Bạn muốn xóa bài đăng này?",
+      text: "Bạn sẽ không thể phục hồi lại bài đăng khi xóa",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
+      confirmButtonText: "Xóa",
     }).then(async(result) => {
       if (result.isConfirmed) {
          await deleteDoc(colRel);
-        Swal.fire("Deleted!", "Your file has been deleted.", "success");
+        Swal.fire("Đã xóa bài đăng", "Thành công");
+        navigate("/homePage")
       }
+      
     });
     
   };

@@ -19,6 +19,7 @@ import {
 } from "firebase/firestore";
 import { db } from "firebase-app/firebase-config";
 import { useAuth } from "contexts/auth-context";
+import { toast } from "react-toastify";
 
 const AddNewPost = () => {
   const { userInfo } = useAuth();
@@ -116,6 +117,8 @@ const AddNewPost = () => {
   const handleAddPost = async (values) => {
     const cloneValues = { ...values };
     const colRef = collection(db, "posts");
+
+    
     await addDoc(colRef, {
       ...cloneValues,
       image,
@@ -123,9 +126,8 @@ const AddNewPost = () => {
       PostNameId: user.username,
       createAt: serverTimestamp(),
       username: user.username,
-      likePost: 0,
-      commentPost: 0,
     });
+    toast.success("Đăng bài viết thành công !!!");
     window.location.reload();
   };
   return (
@@ -161,6 +163,7 @@ const AddNewPost = () => {
                   name="image"
                   progress={progress}
                   image={image}
+                  required
                 ></ImageUpload>
               </div>
             </div>
